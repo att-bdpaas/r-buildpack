@@ -106,4 +106,4 @@ RPROG
 echo "R $R_VERSION successfully installed" | indent
 
 # need to copy binaries back so that any installed packages are included in the slug
-cp -R /app/vendor/R/* $VENDOR_DIR/R
+cp -R /app/vendor/* $VENDOR_DIR
