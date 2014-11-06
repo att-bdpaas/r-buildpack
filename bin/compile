@@ -26,6 +26,7 @@ function indent() {
 unset GIT_DIR
 
 # parse and derive params
+DIR="$( cd "$( dirname $0 )" && pwd )"
 BUILD_DIR=$1
 CACHE_DIR="$2/vendor"
 LP_DIR=`cd $(dirname $0); cd ..; pwd`
@@ -36,7 +37,8 @@ R_VERSION="3.1.0"
 BUILD_PACK_VERSION="20140608-1824"
 
 S3_BUCKET="heroku-buildpack-r"
-R_BINARIES="http://${S3_BUCKET}.s3.amazonaws.com/R-${R_VERSION}-binaries-${BUILD_PACK_VERSION}.tar.gz"
+R_TARBALL="R-${R_VERSION}-binaries-${BUILD_PACK_VERSION}.tar.gz"
+R_BINARIES="http://${S3_BUCKET}.s3.amazonaws.com/${R_TARBALL}"
 
 VENDOR_DIR="$BUILD_DIR/vendor"
 R_BASE="$VENDOR_DIR/R"
@@ -48,8 +50,14 @@ mkdir -p $CACHE_DIR
 echo "Vendoring R $R_VERSION" | indent
 
 # download and unpack binaries
-echo "Downloading and unpacking R binaries" | indent
-mkdir -p $VENDOR_DIR && curl $R_BINARIES -s -o - | tar xzf - -C $VENDOR_DIR
+mkdir -p $VENDOR_DIR
+if [ -e "${DIR}/../${R_TARBALL}" ]; then
+    echo "Unpacking local R binaries" | indent
+    tar xzf ${DIR}/../${R_TARBALL} -C $VENDOR_DIR
+else
+    echo "Downloading and unpacking R binaries" | indent
+    curl $R_BINARIES -s -o - | tar xzf - -C $VENDOR_DIR
+fi
 
 # need to copy the binaries to /app/vendor so that R works
 mkdir -p /app/vendor/gcc
